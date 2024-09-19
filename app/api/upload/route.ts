@@ -1,6 +1,7 @@
 import { createPresignedPost } from '@aws-sdk/s3-presigned-post'
 import { S3Client } from '@aws-sdk/client-s3'
 import { v4 as uuidv4 } from 'uuid'
+import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
   const { filename, contentType } = await request.json()
@@ -21,8 +22,26 @@ export async function POST(request: Request) {
       Expires: 600, // Seconds before the presigned post expires. 3600 by default.
     })
 
-    return Response.json({ url, fields })
+    return NextResponse.json({ url, fields }, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      },
+    })
   } catch (error) {
-    return Response.json({ error: error.message })
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
+}
+
+export async function OPTIONS(request: Request) {
+  return NextResponse.json({}, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  })
 }
