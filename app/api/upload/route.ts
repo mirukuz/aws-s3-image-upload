@@ -10,13 +10,15 @@ const corsHeaders = {
 }
 
 export async function POST(request: Request) {
-  const { filename, contentType } = await request.json()
+  const { contentType } = await request.json()
+  const fileName = uuidv4()
+  const folderName = uuidv4()
 
   try {
     const client = new S3Client({ region: process.env.AWS_REGION })
     const { url, fields } = await createPresignedPost(client, {
       Bucket: process.env.AWS_BUCKET_NAME,
-      Key: uuidv4(),
+      Key: `${folderName}/${fileName}`,
       Conditions: [
         ['content-length-range', 0, 10485760], // up to 10 MB
         ['starts-with', '$Content-Type', contentType],
@@ -28,7 +30,7 @@ export async function POST(request: Request) {
       Expires: 600, // Seconds before the presigned post expires. 3600 by default.
     })
 
-    return NextResponse.json({ url, fields }, { headers: corsHeaders })
+    return NextResponse.json({ url, fields, folderName }, { headers: corsHeaders })
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500, headers: corsHeaders })
   }
