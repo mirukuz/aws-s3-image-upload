@@ -50,6 +50,7 @@ export default function Page() {
         alert('Upload failed.')
       }
     } else {
+      console.error("Failed to get pre-signed URL.", response)
       alert('Failed to get pre-signed URL.')
     }
 
